@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 function App() {
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState(null);
+  const [loading, setLoading] = useState(false); 
 
   useEffect(() => {
     fetch("https://restcountries.com/v3.1/all")
@@ -12,10 +13,17 @@ function App() {
   }, []);
 
   const fetchCountryDetails = (name) => {
+    setLoading(true); 
     fetch(`https://restcountries.com/v3.1/name/${name}`)
       .then((response) => response.json())
-      .then((data) => setSelectedCountry(data[0]))
-      .catch((error) => console.error("Ошибка загрузки деталей:", error));
+      .then((data) => {
+        setSelectedCountry(data[0]); 
+        setLoading(false); 
+      })
+      .catch((error) => {
+        console.error("Ошибка загрузки деталей:", error);
+        setLoading(false); 
+      });
   };
 
   return (
@@ -23,12 +31,15 @@ function App() {
       <h1>Список стран</h1>
       <ul>
         {countries.map((country) => (
-          <li key={country.cca3}>
-            {country.name.common} <button onClick={() => fetchCountryDetails(country.name.common)}>Подробнее</button>
+          <li key={country.cca3} onClick={() => fetchCountryDetails(country.name.common)}>
+            {country.name.common}
           </li>
         ))}
       </ul>
-      {selectedCountry && (
+
+      {loading && <div>Загрузка...</div>}
+
+      {selectedCountry && !loading && (
         <div>
           <h2>{selectedCountry.name.common}</h2>
           <p>Столица: {selectedCountry.capital}</p>
